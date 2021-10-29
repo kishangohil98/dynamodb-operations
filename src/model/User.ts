@@ -76,7 +76,6 @@ export const getUserByUsername = async (username: string) => {
 export const getUserById = async (userId: string) => {
     const client: DynamoDB = getDynamoDb();
 
-    console.log("userId", userId);
     const getItemInput :DynamoDB.DocumentClient.QueryInput= {
         TableName: process.env.TABLE_NAME!,
         KeyConditionExpression: 'PK = :userId',
@@ -89,3 +88,24 @@ export const getUserById = async (userId: string) => {
     };
     return client.query(getItemInput).promise();
 }
+
+// Search by category
+export const searchByCategory = async (category: string) => {
+    const client: DynamoDB = getDynamoDb();
+
+    console.log("category", category);
+    const scanInput :DynamoDB.DocumentClient.ScanInput = {
+        TableName: process.env.TABLE_NAME!,
+        FilterExpression: 'contains(category, :category)',
+        ExpressionAttributeValues: {
+            ':category': {
+                S: category,
+            }
+        },
+        ReturnConsumedCapacity: 'TOTAL'
+    }
+
+    return client.scan(scanInput).promise();
+}
+
+// DynamoDB document client opearion
