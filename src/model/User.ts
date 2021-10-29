@@ -93,7 +93,6 @@ export const getUserById = async (userId: string) => {
 export const searchByCategory = async (category: string) => {
     const client: DynamoDB = getDynamoDb();
 
-    console.log("category", category);
     const scanInput :DynamoDB.DocumentClient.ScanInput = {
         TableName: process.env.TABLE_NAME!,
         FilterExpression: 'contains(category, :category)',
@@ -108,4 +107,54 @@ export const searchByCategory = async (category: string) => {
     return client.scan(scanInput).promise();
 }
 
-// DynamoDB document client opearion
+// DynamoDB Update operation
+export const updateUser = async ({
+    userId,
+    category,
+    username,
+} :{
+    userId :string;
+    category :string;
+    username :string;
+}) => {
+    const client: DynamoDB = getDynamoDb();
+
+    const updateInput :DynamoDB.UpdateItemInput = {
+        TableName: process.env.TABLE_NAME!,
+        Key: {
+            PK: {
+                S: `USER#${userId}`
+            },
+            SK: {
+                S: `USER#${userId}`
+            }
+        },
+        UpdateExpression: 'SET username = :username, category = :category',
+        ExpressionAttributeValues: {
+            ':category': {
+                S: category,
+            },
+            ':username': {
+                S: username,
+            }
+        }
+    };
+    return client.updateItem(updateInput).promise();
+}
+
+// DynamoDB Update operation
+export const deleteUser = async (userId :string) => {
+    const client: DynamoDB = getDynamoDb();
+
+    return client.deleteItem({
+        TableName: process.env.TABLE_NAME!,
+        Key: {
+            PK: {
+                S: `USER#${userId}`
+            },
+            SK: {
+                S: `USER#${userId}`
+            }
+        }
+    }).promise();
+}
