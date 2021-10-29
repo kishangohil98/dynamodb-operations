@@ -84,3 +84,48 @@ router.delete(url, async (req: Request, res: Response) => {
         });
     }
 });
+
+router.put(url, async (req: Request, res: Response) => {
+    try {
+        const addGsiInput : DynamoDB.DocumentClient.UpdateTableInput = {
+            TableName: process.env.TABLE_NAME!,
+            AttributeDefinitions: [
+                {
+                    AttributeName: 'category',
+                    AttributeType: 'S'
+                },
+            ],
+            GlobalSecondaryIndexUpdates: [
+                {
+                    Create: {
+                        IndexName: 'category-gsi-index',
+                        KeySchema: [
+                            {
+                                AttributeName: 'category',
+                                KeyType: 'HASH'
+                            }
+                        ],
+                        ProvisionedThroughput: {
+                            ReadCapacityUnits: 1,
+                            WriteCapacityUnits: 1
+                        },
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        }
+                    }
+                }
+            ]
+        }
+        const updateTableResponse: DynamoDB.DeleteTableOutput = await client.updateTable(addGsiInput).promise();
+        console.log("updateTableResponse", updateTableResponse);
+
+        res.status(200).json({
+            message: 'Table updated succesfully'
+        });
+    } catch (error :any) {
+        console.error(error);
+        res.status(500).json({
+            error
+        });
+    }
+});
